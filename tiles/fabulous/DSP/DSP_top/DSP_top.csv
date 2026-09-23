@@ -1,4 +1,4 @@
-TILE,DSP_top,,,,,,,,,,,,,,,,,
+TILE,DSP_top,DEPRECATED,,,,,,,,,,,,,,,,
 #direction,source_name,X-offset,Y-offset,destination_name,wires,,,,,,,,,,,,,
 INCLUDE,../../include/Base.csv
 NORTH,NULL,0,-1,bot2top,10,,,,,,,,,,,,,

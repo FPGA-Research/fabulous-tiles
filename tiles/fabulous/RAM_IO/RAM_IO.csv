@@ -1,4 +1,4 @@
-TILE,RAM_IO,,,,,,,,,,,,,,,,,
+TILE,RAM_IO,DEPRECATED,,,,,,,,,,,,,,,,
 #direction,source_name,X-offset,Y-offset,destination_name,wires,,,,,,,,,,,,,
 NORTH,N1BEG,0,-1,N1END,4,,,,,,,,,,,,,
 NORTH,N2BEG,0,-1,N2MID,8,,,,,,,,,,,,,

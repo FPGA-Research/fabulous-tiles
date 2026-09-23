@@ -1,4 +1,4 @@
-TILE,W_IO,,,,,,,,,,,,,,,,,
+TILE,W_IO,DEPRECATED,,,,,,,,,,,,,,,,
 #direction,source_name,X-offset,Y-offset,destination_name,wires,,,,,,,,,,,,,
 EAST,E1BEG,1,0,NULL,4,,,,,,,,,,,,,
 EAST,E2BEG,1,0,NULL,8,,,,,,,,,,,,,

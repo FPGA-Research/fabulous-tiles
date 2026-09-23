@@ -12,9 +12,9 @@ all_primitives.md
 *switch_matrix.csv
 *switch_matrix.v
 tiles/**/*.v
-# The deprecated library ships hand-written BELs and config memory maps
-!tiles/deprecated/**/*.v
-!tiles/deprecated/**/*ConfigMem.csv
+# The fabulous library ships hand-written BELs and config memory maps
+!tiles/fabulous/**/*.v
+!tiles/fabulous/**/*ConfigMem.csv
 macro/
 runs/
 

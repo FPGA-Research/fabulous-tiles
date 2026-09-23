@@ -1,4 +1,4 @@
-TILE,LUT4AB,,,,,#carry out,,,,,,,,,,,,
+TILE,LUT4AB,DEPRECATED,,,,#carry out,,,,,,,,,,,,
 INCLUDE,../include/Base.csv
 #direction,source_name,X-offset,Y-offset,destination_name,wires,,,,,,,,,,,,,
 NORTH,Co,0,-1,Ci,1,# carry,,,,,,,,,,,,
