@@ -6,6 +6,8 @@ The primitives for the tiles can be found in the `primitives/` folder and the ti
 
 Documentation for the primitives and tiles can be found in the respective folder's README. There is also a documentation generated using Sphinx.
 
+`tiles/deprecated/` is a copy of the legacy FABulous template tiles, kept only for backward compatibility during the FABulous migration. Do not use it for new fabrics; see [tiles/deprecated/DEPRECATED.md](tiles/deprecated/DEPRECATED.md).
+
 A Continuous Integration (CI) setup implements all of the tiles for the gf180mcu, sky130, and ihp-sg13g2 PDKs.
 
 ## Requirements
