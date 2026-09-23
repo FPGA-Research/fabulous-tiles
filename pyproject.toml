@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fabulous-tiles"
+version = "0.1.0"
+description = "Tile libraries and primitives for the FABulous FPGA fabric generator"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+
+# The assets stay at the repository root because the LibreLane flow and the
+# fabulous-fabrics submodule paths address them there.
+[tool.hatch.build.targets.wheel]
+packages = ["fabulous_tiles"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"tiles" = "fabulous_tiles/tiles"
+"primitives" = "fabulous_tiles/primitives"
+
+# PR #2 force-added files that .gitignore matches (*ConfigMem.csv, tiles/**/*.v),
+# so the sdist must not filter by VCS ignore rules.
+[tool.hatch.build.targets.sdist]
+only-include = ["fabulous_tiles", "tiles", "primitives", "README.md"]
+ignore-vcs = true
+exclude = ["**/runs", "**/macro", "**/__pycache__"]
