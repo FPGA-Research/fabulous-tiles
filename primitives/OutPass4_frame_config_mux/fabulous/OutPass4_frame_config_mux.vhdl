@@ -1,4 +1,3 @@
--- DEPRECATED: BEL of the legacy FABulous project template tiles, kept for backward compatibility. Do not use in new tiles.
 package attr_pack_RAM_IO_OutPass4_frame_config_mux is
 
   attribute FABulous    : string;

@@ -1,4 +1,3 @@
--- DEPRECATED: BEL of the legacy FABulous project template tiles, kept for backward compatibility. Do not use in new tiles.
 package attr_pack_DSP_MULADD is
 
   attribute FABulous      : string;
