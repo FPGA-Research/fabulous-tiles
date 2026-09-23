@@ -2,6 +2,7 @@
 package attr_pack_RAM_IO_InPass4_frame_config_mux is
 
   attribute FABulous    : string;
+  attribute DEPRECATED  : string;
   attribute BelMap      : string;
   attribute I0_reg      : integer;
   attribute I1_reg      : integer;
@@ -37,6 +38,7 @@ entity InPass4_frame_config_mux is
   );
 
   attribute FABulous of InPass4_frame_config_mux : entity is "TRUE";
+  attribute DEPRECATED of InPass4_frame_config_mux : entity is "TRUE";
   attribute BelMap of InPass4_frame_config_mux   : entity is "TRUE";
   attribute I0_reg of InPass4_frame_config_mux   : entity is 0;
   attribute I1_reg of InPass4_frame_config_mux   : entity is 1;

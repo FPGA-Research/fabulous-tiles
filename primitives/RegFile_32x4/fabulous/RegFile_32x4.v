@@ -16,7 +16,7 @@
 
 `default_nettype none
 
-(* FABulous, BelMap,
+(* FABulous, DEPRECATED, BelMap,
     AD_reg=0,
     BD_reg=1
 *)

@@ -2,6 +2,7 @@
 package attr_pack_RegFile_RegFile_32x4 is
 
   attribute FABulous    : string;
+  attribute DEPRECATED  : string;
   attribute BelMap      : string;
   attribute AD_reg      : integer;
   attribute BD_reg      : integer;
@@ -38,6 +39,7 @@ entity RegFile_32x4 is
   );
 
   attribute FABulous of RegFile_32x4 : entity is "TRUE";
+  attribute DEPRECATED of RegFile_32x4 : entity is "TRUE";
   attribute BelMap of RegFile_32x4   : entity is "TRUE";
   attribute AD_reg of RegFile_32x4   : entity is 0;
   attribute BD_reg of RegFile_32x4   : entity is 1;

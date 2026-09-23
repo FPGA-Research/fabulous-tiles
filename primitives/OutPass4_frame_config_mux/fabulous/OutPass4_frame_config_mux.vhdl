@@ -2,6 +2,7 @@
 package attr_pack_RAM_IO_OutPass4_frame_config_mux is
 
   attribute FABulous    : string;
+  attribute DEPRECATED  : string;
   attribute BelMap      : string;
   attribute O0_reg      : integer;
   attribute O1_reg      : integer;
@@ -37,6 +38,7 @@ entity OutPass4_frame_config_mux is
   );
 
   attribute FABulous of OutPass4_frame_config_mux : entity is "TRUE";
+  attribute DEPRECATED of OutPass4_frame_config_mux : entity is "TRUE";
   attribute BelMap of OutPass4_frame_config_mux   : entity is "TRUE";
   attribute O0_reg of OutPass4_frame_config_mux   : entity is 0;
   attribute O1_reg of OutPass4_frame_config_mux   : entity is 1;

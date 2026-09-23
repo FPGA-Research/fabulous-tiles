@@ -2,6 +2,7 @@
 package attr_pack_DSP_MULADD is
 
   attribute FABulous      : string;
+  attribute DEPRECATED    : string;
   attribute BelMap        : string;
   attribute A_reg         : integer;
   attribute B_reg         : integer;
@@ -35,6 +36,7 @@ entity MULADD is
     ConfigBits : in    std_logic_vector(NoConfigBits - 1 downto 0) -- (* FABulous, GLOBAL *)
   );
   attribute FABulous of MULADD      : entity is "TRUE";
+  attribute DEPRECATED of MULADD    : entity is "TRUE";
   attribute BelMap of MULADD        : entity is "TRUE";
   attribute A_reg of MULADD         : entity is 0;
   attribute B_reg of MULADD         : entity is 1;

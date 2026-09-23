@@ -2,6 +2,7 @@
 package attr_pack_W_IO_Config_access is
 
   attribute FABulous    : string;
+  attribute DEPRECATED  : string;
   attribute BelMap      : string;
   attribute C_bit0      : integer;
   attribute C_bit1      : integer;
@@ -29,6 +30,7 @@ entity Config_access is
     ConfigBits : in    std_logic_vector(NoConfigBits - 1 downto 0) -- (* FABulous, GLOBAL *)
   );
   attribute FABulous of Config_access : entity is "TRUE";
+  attribute DEPRECATED of Config_access : entity is "TRUE";
   attribute BelMap of Config_access   : entity is "TRUE";
   attribute C_bit0 of Config_access   : entity is 0;
   attribute C_bit1 of Config_access   : entity is 1;

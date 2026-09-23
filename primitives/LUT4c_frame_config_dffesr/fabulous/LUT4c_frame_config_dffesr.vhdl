@@ -2,6 +2,7 @@
 package attr_pack_LUT4AB_LUT4c_frame_config_dffesr is
 
   attribute FABulous    : string;
+  attribute DEPRECATED  : string;
   attribute BelMap      : string;
   attribute INIT        : integer;
   attribute INIT_1      : integer;
@@ -58,6 +59,7 @@ entity LUT4c_frame_config_dffesr is
   );
 
   attribute FABulous of LUT4c_frame_config_dffesr    : entity is "TRUE";
+  attribute DEPRECATED of LUT4c_frame_config_dffesr  : entity is "TRUE";
   attribute BelMap of LUT4c_frame_config_dffesr      : entity is "TRUE";
   attribute INIT of LUT4c_frame_config_dffesr        : entity is 0;
   attribute INIT_1 of LUT4c_frame_config_dffesr      : entity is 1;

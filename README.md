@@ -6,7 +6,7 @@ The primitives for the tiles can be found in the `primitives/` folder and the ti
 
 Documentation for the primitives and tiles can be found in the respective folder's README. There is also a documentation generated using Sphinx.
 
-`tiles/fabulous/` is the tile set of the FABulous project template, kept for backward compatibility and marked `DEPRECATED` in each `TILE` row. Its BELs live in `primitives/` and carry the same marker in their README and on the first line of each source. The library stays in FABulous format: BEL rows use the `{HDL_SUFFIX}` placeholder that FABulous fills in at project creation, and Verilog and VHDL sources sit side by side. It has no LibreLane `config.yaml`, so `TILE_LIBRARY=fabulous make` does not build it.
+`tiles/fabulous/` is the tile set of the FABulous project template, kept for backward compatibility and marked `DEPRECATED` in each `TILE` row. Its BELs live in `primitives/` and carry a `DEPRECATED` module attribute, which FABulous releases up to `e9e85cc71` reject as an unknown BelMap entry. The library stays in FABulous format: BEL rows use the `{HDL_SUFFIX}` placeholder that FABulous fills in at project creation, and Verilog and VHDL sources sit side by side. It has no LibreLane `config.yaml`, so `TILE_LIBRARY=fabulous make` does not build it.
 
 A Continuous Integration (CI) setup implements all of the tiles for the gf180mcu, sky130, and ihp-sg13g2 PDKs.
 

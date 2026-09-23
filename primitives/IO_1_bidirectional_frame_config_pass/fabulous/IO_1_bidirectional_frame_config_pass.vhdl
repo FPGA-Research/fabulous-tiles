@@ -2,6 +2,7 @@
 package attr_pack_W_IO_IO_1_bidirectional_frame_config_pass is
 
   attribute FABulous    : string;
+  attribute DEPRECATED  : string;
   attribute BelMap      : string;
   attribute EXTERNAL    : string;
   attribute SHARED_PORT : string;
@@ -36,6 +37,7 @@ entity IO_1_bidirectional_frame_config_pass is
   -- ConfigBits : in   STD_LOGIC_VECTOR( NoConfigBits -1 downto 0 )
   );
   attribute FABulous of IO_1_bidirectional_frame_config_pass : entity is "TRUE";
+  attribute DEPRECATED of IO_1_bidirectional_frame_config_pass : entity is "TRUE";
   attribute BelMap of IO_1_bidirectional_frame_config_pass   : entity is "TRUE";
   attribute EXTERNAL of UserCLK                              : signal is "TRUE";
   -- SHARED_PORT allows multiple BELs using the same port

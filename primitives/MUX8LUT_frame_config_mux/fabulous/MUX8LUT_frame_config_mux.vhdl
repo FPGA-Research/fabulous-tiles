@@ -2,6 +2,7 @@
 package attr_pack_LUT4AB_MUX8LUT_frame_config_mux is
 
   attribute FABulous    : string;
+  attribute DEPRECATED  : string;
   attribute BelMap      : string;
   attribute C0          : integer;
   attribute C1          : integer;
@@ -40,6 +41,7 @@ entity MUX8LUT_frame_config_mux is
     ConfigBits : in    std_logic_vector(NoConfigBits - 1 downto 0) -- (* FABulous, GLOBAL *)
   );
   attribute FABulous of MUX8LUT_frame_config_mux : entity is "TRUE";
+  attribute DEPRECATED of MUX8LUT_frame_config_mux : entity is "TRUE";
   attribute BelMap of MUX8LUT_frame_config_mux   : entity is "TRUE";
   attribute C0 of MUX8LUT_frame_config_mux       : entity is 0;
   attribute C1 of MUX8LUT_frame_config_mux       : entity is 1;
