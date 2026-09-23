@@ -1,3 +1,4 @@
+-- DEPRECATED: BEL of the legacy FABulous project template tiles, kept for backward compatibility. Do not use in new tiles.
 package attr_pack_LUT4AB_MUX8LUT_frame_config_mux is
 
   attribute FABulous    : string;

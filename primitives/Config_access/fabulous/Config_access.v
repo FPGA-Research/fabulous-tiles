@@ -1,3 +1,4 @@
+// DEPRECATED: BEL of the legacy FABulous project template tiles, kept for backward compatibility. Do not use in new tiles.
 `default_nettype none
 
 (* FABulous, BelMap,

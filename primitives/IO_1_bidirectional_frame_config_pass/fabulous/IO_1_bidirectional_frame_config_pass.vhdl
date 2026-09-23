@@ -1,3 +1,4 @@
+-- DEPRECATED: BEL of the legacy FABulous project template tiles, kept for backward compatibility. Do not use in new tiles.
 package attr_pack_W_IO_IO_1_bidirectional_frame_config_pass is
 
   attribute FABulous    : string;

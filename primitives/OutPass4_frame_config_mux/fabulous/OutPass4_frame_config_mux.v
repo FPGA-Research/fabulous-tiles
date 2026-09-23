@@ -1,4 +1,4 @@
-
+// DEPRECATED: BEL of the legacy FABulous project template tiles, kept for backward compatibility. Do not use in new tiles.
 // Copyright 2021 University of Manchester
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 `default_nettype none
 
 (* FABulous, BelMap,
@@ -21,29 +22,32 @@
     I2_reg=2,
     I3_reg=3
 *)
-module InPass4_frame_config_mux #(
+// InPass4 and OutPass4 are the same except for changing on which side I[3:0] or O[3:0] get connected to the top entity
+module OutPass4_frame_config_mux #(
     parameter integer NoConfigBits = 4
 ) (
-    (* FABulous, EXTERNAL *) input wire [3:0] I,
-    output wire [3:0] O,
+    // NoConfigBits has to be adjusted manually (we don't use an arithmetic parser for the value)
+    input wire [3:0] I,
+    (* FABulous, EXTERNAL *) output wire [3:0] O,
     // The "EXTERNAL" keyword will send this signal all the way to top
     // The "SHARED" keyword allows multiple BELs using the same port (e.g. for exporting a clock to the top)
     (* FABulous, EXTERNAL, SHARED_PORT *)
     input wire UserCLK,
     // All primitive pins that are connected to the switch matrix have to go before the "GLOBAL" label
-    (* FABulous, GLOBAL *) input wire [NoConfigBits - 1 : 0] ConfigBits
-    //_____   ______
-    //    I----+--->|FLOP|-Q-|1 M |
-    //         |             |  U |-------> O
-    //         +-------------|0 X |
+    (* FABulous, GLOBAL *) input wire [NoConfigBits-1:0] ConfigBits
 );
-    reg [3:0] Q;
+
+    //              ______   ______
+    //    I////+//->|FLOP|-Q-|1 M |
+    //         |             |  U |//////-> O
+    //         +////////////-|0 X |
+
+    reg [3:0] Q;  // Flops
 
     always @(posedge UserCLK) begin
         Q <= I;
     end
 
-    // ConfigBits ( '0' combinatorial; '1' registered )
     cus_mux21 cus_mux21_inst0 (
         .A0(I[0]),
         .A1(Q[0]),
@@ -71,5 +75,6 @@ module InPass4_frame_config_mux #(
         .S (ConfigBits[3]),
         .X (O[3])
     );
+
 endmodule
 `resetall

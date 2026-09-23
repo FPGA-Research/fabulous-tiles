@@ -1,3 +1,4 @@
+// DEPRECATED: BEL of the legacy FABulous project template tiles, kept for backward compatibility. Do not use in new tiles.
 // Copyright 2021 University of Manchester
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
