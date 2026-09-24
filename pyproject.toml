@@ -21,13 +21,14 @@ fallback-version = "0.0.0"
 
 # fabulous_tiles/tiles and fabulous_tiles/primitives are symlinks to the top-level
 # directories, which stay there because the LibreLane flow and the fabulous-fabrics
-# submodule paths address them. Hatchling copies the symlink targets.
+# submodule paths address them. Hatchling copies the symlink targets. PR #2
+# force-added files that .gitignore matches (*ConfigMem.csv, tiles/**/*.v), so
+# neither target may filter by VCS ignore rules.
 [tool.hatch.build.targets.wheel]
 packages = ["fabulous_tiles"]
+ignore-vcs = true
 exclude = ["**/runs", "**/macro", "**/__pycache__"]
 
-# PR #2 force-added files that .gitignore matches (*ConfigMem.csv, tiles/**/*.v),
-# so the sdist must not filter by VCS ignore rules.
 [tool.hatch.build.targets.sdist]
 only-include = ["fabulous_tiles", "README.md"]
 ignore-vcs = true
