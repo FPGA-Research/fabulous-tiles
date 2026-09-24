@@ -293,7 +293,9 @@ def test_load_entry_points_errors(
     ]
     for r in roots:
         (tmp_path / r).mkdir(exist_ok=True)
-    monkeypatch.setattr("fabulous_tiles.sources.entry_points", lambda group: registered)
+    monkeypatch.setattr(
+        "fabulous_tiles.registry.entry_points", lambda group: registered
+    )
     with pytest.raises(error, match=match):
         load_entry_points("test.group", "widget", lambda root: {"x": root})
 
@@ -307,7 +309,9 @@ def test_load_entry_points_merges_directories(
         _EntryPoint(name=r, value=f"pkg_{r}:ROOT", target=tmp_path / r)
         for r in ("b", "a")
     ]
-    monkeypatch.setattr("fabulous_tiles.sources.entry_points", lambda group: registered)
+    monkeypatch.setattr(
+        "fabulous_tiles.registry.entry_points", lambda group: registered
+    )
     found = load_entry_points("test.group", "widget", lambda root: {root.name: root})
     assert found == {"a": tmp_path / "a", "b": tmp_path / "b"}
 
