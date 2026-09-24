@@ -1,14 +1,20 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
 name = "fabulous-tiles"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Tile libraries and primitives for the FABulous FPGA fabric generator"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.12"
+
+# The version comes from the git tag. A build without git history, such as a Nix
+# fetchGit source, falls back to the last release, which release-please bumps.
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "0.0.0"
 
 # The assets stay at the repository root because the LibreLane flow and the
 # fabulous-fabrics submodule paths address them there.
