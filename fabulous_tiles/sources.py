@@ -1,24 +1,31 @@
 """Tile libraries and primitives discovered from the directory layout.
 
-A tile is any `tiles/<library>/**/<name>/<name>.csv` below the library root, and a
-primitive is any `primitives/<name>/` holding `fabulous/<name>.v` or
-`fabulous/<name>.vhdl`. Adding such a directory registers it, so no list of tiles
-or primitives exists to keep in sync. The registries scan on first access and cache
-the result for the life of the process.
+A package registers a directory of tile libraries under the entry-point group
+`fabulous.tile_libraries` and a directory of primitives under `fabulous.primitives`;
+this package registers its own directories the same way. Inside a registered
+directory, a tile is any `<library>/**/<name>/<name>.csv` below the library root and
+a primitive is any `<name>/` holding `fabulous/<name>.v` or `fabulous/<name>.vhdl`.
+Adding such a directory registers it, so no list of tiles or primitives exists to
+keep in sync. The registries scan on first access and cache the result for the life
+of the process.
 
 Every file reference a tile CSV makes (`INCLUDE`, `MATRIX`, `BEL`) is resolved and
 checked when its library is scanned, so a broken reference fails at lookup rather
-than when FABulous later reads the copied project.
+than when FABulous later reads the materialised project.
 """
 
 import csv
+import shutil
 from collections.abc import Callable, Iterator, Mapping
 from dataclasses import dataclass, field, replace
 from enum import StrEnum
 from importlib import resources
+from importlib.metadata import entry_points
 from pathlib import Path
 
 HDL_SUFFIX = "{HDL_SUFFIX}"
+TILE_LIBRARIES_GROUP = "fabulous.tile_libraries"
+PRIMITIVES_GROUP = "fabulous.primitives"
 
 
 def _package_root() -> Path:
@@ -59,6 +66,17 @@ class TileKind(StrEnum):
     SUPERTILE = "SuperTILE"
 
 
+class Status(StrEnum):
+    """The support status of a tile, set by column 3 of its CSV header.
+
+    An empty column means `STABLE`; `EXPERIMENTAL` and `DEPRECATED` are written out.
+    """
+
+    STABLE = "STABLE"
+    EXPERIMENTAL = "EXPERIMENTAL"
+    DEPRECATED = "DEPRECATED"
+
+
 class Registry[V](Mapping[str, V]):
     """A read-only name lookup that loads its entries on first access.
 
@@ -86,6 +104,57 @@ class Registry[V](Mapping[str, V]):
 
     def __len__(self) -> int:
         return len(self._loaded())
+
+
+def load_entry_points[V](
+    group: str, kind: str, load: Callable[[Path], Mapping[str, V]]
+) -> dict[str, V]:
+    """Merge what `load` finds in every directory registered under `group`.
+
+    Each entry point in `group` must load a `Path` to a directory, which `load`
+    turns into named entries.
+
+    Raises
+    ------
+    RuntimeError
+        If no installed package registers anything under `group`, which happens
+        when a package is imported from a checkout that was never installed.
+    TypeError
+        If an entry point loads something other than a directory `Path`.
+    ValueError
+        If two registered directories provide an entry of the same name.
+    """
+    registered = sorted(entry_points(group=group), key=lambda ep: ep.name)
+    if not registered:
+        raise RuntimeError(
+            f"No installed package registers a {kind} directory under the entry-point "
+            f"group {group}. Install the package, for example with `uv sync`, rather "
+            "than importing it from a bare checkout."
+        )
+    found: dict[str, V] = {}
+    owners: dict[str, str] = {}
+    for ep in registered:
+        root = ep.load()
+        owner = f"entry point {ep.name} ({ep.value})"
+        if not isinstance(root, Path) or not root.is_dir():
+            raise TypeError(
+                f"The {owner} in group {group} loads {root!r}, not a directory Path."
+            )
+        for name, entry in load(root).items():
+            if name in found:
+                raise ValueError(
+                    f"The {kind} {name!r} is registered by both {owners[name]} and "
+                    f"{owner}. Rename one of them."
+                )
+            found[name] = entry
+            owners[name] = owner
+    return found
+
+
+def _copy_writable(src: Path, dest: Path) -> None:
+    """Copy file contents only, so a read-only source yields a writable copy."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(src, dest)
 
 
 @dataclass(frozen=True, slots=True)
@@ -140,7 +209,10 @@ def load_primitives(root: Path) -> dict[str, PrimitiveSource]:
 
 @dataclass(frozen=True, slots=True)
 class BelRef:
-    """A `BEL` row of a tile CSV, its primitive and the file it selects per language."""
+    """A `BEL` row of a tile, its primitive and the file it selects per language.
+
+    `row` is the reference exactly as the tile definition writes it.
+    """
 
     row: str
     primitive: PrimitiveSource
@@ -172,17 +244,18 @@ class BelRef:
 class TileSource:
     """A tile or supertile and every file it needs.
 
-    `files(language)` is the full set: the tile's own files, what its CSV and switch
-    matrix `INCLUDE`, the BEL primitive sources for `language` and, for a supertile,
-    the files of its subtiles.
+    `files(language)` is the full set: the tile's own files, what its definition and
+    switch matrix `INCLUDE`, the BEL primitive sources for `language` and, for a
+    supertile, the files of its subtiles. `definition` is the file that declares the
+    tile, today its CSV.
     """
 
     name: str
     library: str
     kind: TileKind
     root: Path
-    csv: Path
-    deprecated: bool
+    definition: Path
+    status: Status
     own_files: tuple[Path, ...]
     includes: tuple[Path, ...]
     matrix: Path | None
@@ -258,10 +331,7 @@ def _row_language(row: str) -> Language:
 
 
 def _bel_ref(
-    tile_csv: Path,
-    row: str,
-    primitives: Mapping[str, PrimitiveSource],
-    primitives_root: Path,
+    tile_csv: Path, row: str, primitives: Mapping[str, PrimitiveSource]
 ) -> BelRef:
     if HDL_SUFFIX in row:
         candidates = {
@@ -279,28 +349,24 @@ def _bel_ref(
         raise FileNotFoundError(
             f"BEL {row} in {tile_csv} resolves to none of {sorted(map(str, candidates.values()))}."
         )
-    names = set()
-    for path in sources.values():
-        if not path.is_relative_to(primitives_root):
-            raise ValueError(
-                f"BEL {row} in {tile_csv} resolves to {path}, outside {primitives_root}. "
-                "Tile BELs must be primitives."
-            )
-        names.add(path.relative_to(primitives_root).parts[0])
-    (name,) = names
-    if name not in primitives:
+    owners = {
+        primitive.name
+        for path in sources.values()
+        for primitive in primitives.values()
+        if path.is_relative_to(primitive.root)
+    }
+    if len(owners) != 1:
         raise ValueError(
-            f"BEL {row} in {tile_csv} lands in primitives/{name}, which is no registered "
-            "primitive because it lacks a fabulous/ source directory."
+            f"BEL {row} in {tile_csv} resolves to "
+            f"{sorted(map(str, sources.values()))}, which lie in no single registered "
+            "primitive. Tile BELs must be primitives."
         )
+    (name,) = owners
     return BelRef(row=row, primitive=primitives[name], sources=sources)
 
 
 def _read_tile(
-    tile_csv: Path,
-    library: str,
-    primitives: Mapping[str, PrimitiveSource],
-    primitives_root: Path,
+    tile_csv: Path, library: str, primitives: Mapping[str, PrimitiveSource]
 ) -> tuple[TileSource, list[str]]:
     """Read one tile CSV; return the tile and, for a supertile, its subtile names."""
     rows = _read_rows(tile_csv)
@@ -317,10 +383,16 @@ def _read_tile(
             f"{tile_csv} names tile {header[1]!r}, but its directory is {name}."
         )
     marker = header[2].strip() if len(header) > 2 else ""
-    if marker not in ("", "DEPRECATED"):
-        raise ValueError(
-            f"{tile_csv} has {marker!r} in header column 3; only DEPRECATED is allowed."
-        )
+    match marker:
+        case "":
+            status = Status.STABLE
+        case Status.EXPERIMENTAL | Status.DEPRECATED:
+            status = Status(marker)
+        case _:
+            raise ValueError(
+                f"{tile_csv} has {marker!r} in header column 3. Leave it empty for a "
+                "stable tile, or write EXPERIMENTAL or DEPRECATED."
+            )
 
     includes: list[Path] = []
     matrix: Path | None = None
@@ -344,9 +416,7 @@ def _read_tile(
                 if matrix.suffix == ".list":
                     includes += _list_includes(matrix)
             case "BEL":
-                bels.append(
-                    _bel_ref(tile_csv, row[1].strip(), primitives, primitives_root)
-                )
+                bels.append(_bel_ref(tile_csv, row[1].strip(), primitives))
 
     root = tile_csv.parent.resolve()
     config_mem = root / f"{name}_ConfigMem.csv"
@@ -355,8 +425,8 @@ def _read_tile(
         library=library,
         kind=kind,
         root=root,
-        csv=tile_csv.resolve(),
-        deprecated=marker == "DEPRECATED",
+        definition=tile_csv.resolve(),
+        status=status,
         own_files=tuple(sorted(p for p in root.iterdir() if p.is_file())),
         includes=tuple(dict.fromkeys(includes)),
         matrix=matrix,
@@ -387,11 +457,75 @@ class TileLibrary(Mapping[str, TileSource]):
     def __len__(self) -> int:
         return len(self.tiles)
 
+    def materialise(self, dest: Path, language: Language) -> None:
+        """Copy the library into `dest` so the copy references nothing outside it.
+
+        Files directly in the library root are library metadata and are skipped.
+        Every `BEL` row is rewritten to `./<file name>` of the source it selects for
+        `language`, and that source is copied next to the tile definition. Any other
+        `{HDL_SUFFIX}` in a CSV, such as in a commented-out row, becomes the suffix
+        of `language`. The copies are writable even when the installed package is not, because
+        FABulous writes netlists next to a VHDL BEL when it parses it.
+
+        Raises
+        ------
+        ValueError
+            If a tile has no BEL source for `language`, or a CSV that is no tile of
+            the library holds a `BEL` row.
+        FileExistsError
+            If two files with different bytes would land at the same path.
+        """
+        for tile in self.tiles.values():
+            if language not in tile.languages:
+                raise ValueError(
+                    f"Tile {self.name}/{tile.name} supports "
+                    f"{sorted(tile.languages)}, not {language}."
+                )
+        bel_sources = {
+            tile.definition: {bel.row: bel.source(language) for bel in tile.bels}
+            for tile in self.tiles.values()
+        }
+        copied: dict[Path, Path] = {}
+
+        def copy(src: Path, target: Path) -> None:
+            if target in copied and copied[target].read_bytes() != src.read_bytes():
+                raise FileExistsError(
+                    f"{target} would hold both {copied[target]} and {src}, which "
+                    "differ. Rename one of them."
+                )
+            copied[target] = src
+            _copy_writable(src, target)
+
+        for src in sorted(self.root.rglob("*")):
+            if not src.is_file() or src.parent == self.root:
+                continue
+            target = dest / src.relative_to(self.root)
+            if src.suffix != ".csv":
+                copy(src, target)
+                continue
+            with src.open(newline="") as f:
+                lines = f.read().splitlines(keepends=True)
+            out: list[str] = []
+            for line in lines:
+                body = line.rstrip("\r\n")
+                fields = body.split(",")
+                if fields[0] != "BEL":
+                    out.append(line.replace(HDL_SUFFIX, language.suffix))
+                    continue
+                if src not in bel_sources:
+                    raise ValueError(
+                        f"{src} holds a BEL row but is no tile of library {self.name}."
+                    )
+                bel_src = bel_sources[src][fields[1].strip()]
+                copy(bel_src, target.parent / bel_src.name)
+                fields[1] = f"./{bel_src.name}"
+                out.append(",".join(fields) + line[len(body) :])
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text("".join(out), newline="")
+
 
 def load_tile_library(
-    root: Path,
-    primitives: Mapping[str, PrimitiveSource],
-    primitives_root: Path,
+    root: Path, primitives: Mapping[str, PrimitiveSource]
 ) -> TileLibrary:
     """Read every tile below the library directory `root`.
 
@@ -401,23 +535,21 @@ def load_tile_library(
     Raises
     ------
     ValueError
-        If two tiles share a name, a header is malformed, a BEL lies outside
-        `primitives_root` or a supertile names a tile the library lacks.
+        If two tiles share a name, a header is malformed, a BEL lies in no
+        registered primitive or a supertile names a tile the library lacks.
     FileNotFoundError
         If an `INCLUDE`, `MATRIX` or `BEL` reference does not exist.
     """
-    primitives_root = primitives_root.resolve()
     tiles: dict[str, TileSource] = {}
     members: dict[str, list[str]] = {}
     for tile_csv in sorted(root.rglob("*.csv")):
         if tile_csv.parent == root or tile_csv.stem != tile_csv.parent.name:
             continue
-        tile, subtile_names = _read_tile(
-            tile_csv, root.name, primitives, primitives_root
-        )
+        tile, subtile_names = _read_tile(tile_csv, root.name, primitives)
         if tile.name in tiles:
             raise ValueError(
-                f"Library {root.name} has two tiles named {tile.name}: {tiles[tile.name].csv} and {tile.csv}."
+                f"Library {root.name} has two tiles named {tile.name}: "
+                f"{tiles[tile.name].definition} and {tile.definition}."
             )
         tiles[tile.name] = tile
         members[tile.name] = subtile_names
@@ -435,14 +567,19 @@ def load_tile_library(
     return TileLibrary(name=root.name, root=root.resolve(), tiles=tiles)
 
 
+def _load_libraries(root: Path) -> dict[str, TileLibrary]:
+    return {
+        d.name: load_tile_library(d, primitives)
+        for d in sorted(root.iterdir())
+        if d.is_dir()
+    }
+
+
 primitives: Registry[PrimitiveSource] = Registry(
-    "primitive", lambda: load_primitives(PRIMITIVES_ROOT)
+    "primitive",
+    lambda: load_entry_points(PRIMITIVES_GROUP, "primitive", load_primitives),
 )
 tile_libraries: Registry[TileLibrary] = Registry(
     "tile library",
-    lambda: {
-        d.name: load_tile_library(d, primitives, PRIMITIVES_ROOT)
-        for d in sorted(TILES_ROOT.iterdir())
-        if d.is_dir()
-    },
+    lambda: load_entry_points(TILE_LIBRARIES_GROUP, "tile library", _load_libraries),
 )

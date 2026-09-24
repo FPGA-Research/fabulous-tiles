@@ -10,6 +10,14 @@ readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.12"
 
+# The registries in fabulous_tiles.sources read these groups, so another package can
+# add tile libraries or primitives by declaring the same groups.
+[project.entry-points."fabulous.tile_libraries"]
+fabulous-tiles = "fabulous_tiles.sources:TILES_ROOT"
+
+[project.entry-points."fabulous.primitives"]
+fabulous-tiles = "fabulous_tiles.sources:PRIMITIVES_ROOT"
+
 [dependency-groups]
 dev = ["pytest>=8"]
 
