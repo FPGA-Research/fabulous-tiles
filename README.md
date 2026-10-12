@@ -8,6 +8,19 @@ Documentation for the primitives and tiles can be found in the respective folder
 
 `tiles/fabulous/` is the tile set of the FABulous project template, kept for backward compatibility and marked `DEPRECATED` in each `TILE` row. Its BELs live in `primitives/` and carry a `DEPRECATED` module attribute, which FABulous releases up to `e9e85cc71` reject as an unknown BelMap entry. The library stays in FABulous format: BEL rows use the `{HDL_SUFFIX}` placeholder that FABulous fills in at project creation, and Verilog and VHDL sources sit side by side. It has no LibreLane `config.yaml`, so `TILE_LIBRARY=fabulous make` does not build it.
 
+## Python package
+
+The repository is also the `fabulous-tiles` Python package, which FABulous uses to create projects. `fabulous_tiles.tile_libraries["fabulous"]["LUT4AB"]` describes a tile and `fabulous_tiles.primitives["MULADD"]` a primitive. Both registries fill themselves from the directory layout, so a new tile directory `tiles/<library>/<name>/<name>.csv` or primitive directory `primitives/<name>/fabulous/<name>.v` needs no registration.
+
+Another package adds its own libraries or primitives by pointing an entry point at a directory laid out the same way:
+
+```toml
+[project.entry-points."fabulous.tile_libraries"]
+my-tiles = "my_tiles:TILES_ROOT"
+```
+
+Column 3 of a `TILE` or `SuperTILE` header sets the tile status: empty for a stable tile, `EXPERIMENTAL` or `DEPRECATED`.
+
 A Continuous Integration (CI) setup implements all of the tiles for the gf180mcu, sky130, and ihp-sg13g2 PDKs.
 
 ## Requirements
