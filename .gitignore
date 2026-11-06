@@ -12,6 +12,9 @@ all_primitives.md
 *switch_matrix.csv
 *switch_matrix.v
 tiles/**/*.v
+# The fabulous library ships a hand-written latch techmap and config memory map
+!tiles/fabulous/**/*.v
+!tiles/fabulous/**/*ConfigMem.csv
 macro/
 runs/
 
