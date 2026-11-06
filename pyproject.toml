@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fabulous-tiles"
+dynamic = ["version"]
+description = "Tile libraries and primitives for the FABulous FPGA fabric generator"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+
+# The registries in fabulous_tiles.registry read these groups, so another package can
+# add tile libraries or primitives by declaring the same groups.
+[project.entry-points."fabulous.tile_libraries"]
+fabulous-tiles = "fabulous_tiles.registry:TILES_ROOT"
+
+[project.entry-points."fabulous.primitives"]
+fabulous-tiles = "fabulous_tiles.registry:PRIMITIVES_ROOT"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+# The version comes from the git tag. A build without git history, such as a Nix
+# fetchGit source, falls back to the last release, which release-please bumps.
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "0.0.0"
+
+# fabulous_tiles/tiles and fabulous_tiles/primitives are symlinks to the top-level
+# directories, which stay there because the LibreLane flow and the fabulous-fabrics
+# submodule paths address them. Hatchling copies the symlink targets. PR #2
+# force-added files that .gitignore matches (*ConfigMem.csv, tiles/**/*.v), so
+# neither target may filter by VCS ignore rules.
+[tool.hatch.build.targets.wheel]
+packages = ["fabulous_tiles"]
+ignore-vcs = true
+exclude = ["**/runs", "**/macro", "**/__pycache__"]
+
+[tool.hatch.build.targets.sdist]
+only-include = ["fabulous_tiles", "README.md"]
+ignore-vcs = true
+exclude = ["**/runs", "**/macro", "**/__pycache__"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
