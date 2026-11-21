@@ -9,6 +9,14 @@ module config_latch (input D, E, output reg Q, QN);
     end
 endmodule
 
+module config_dff (input D, CLK, output reg Q, QN);
+    always @(posedge CLK)
+    begin
+        Q = D;
+        QN = ~D;
+    end
+endmodule
+
 module my_buf (A, X);
     input A;
     output X;
