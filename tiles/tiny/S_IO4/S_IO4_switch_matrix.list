@@ -54,3 +54,9 @@ N2BEG[0|1|2|3|4|5|6|7],[A_OUT|B_OUT|C_OUT|D_OUT|A_OUT|B_OUT|C_OUT|D_OUT]
 
 # Carry
 Co0,GND0
+
+# Pad each multiplexer to a power of two inputs
+W_GBUF_FEED_BEG0,GND0
+W_GBUF_FEED_BEG1,GND0
+W_GBUF_FEED_BEG2,GND0
+W_GBUF_FEED_BEG3,GND0

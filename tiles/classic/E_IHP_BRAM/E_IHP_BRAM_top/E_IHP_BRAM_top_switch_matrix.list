@@ -127,3 +127,8 @@ W1BEG [0|0] , [bot2top_A_DOUT7|bot2top_A_DOUT2]
 W1BEG [1|1] , [bot2top_A_DOUT6|bot2top_A_DOUT3]
 W1BEG [2|2] , [bot2top_A_DOUT5|bot2top_A_DOUT0]
 W1BEG [3|3] , [bot2top_A_DOUT4|bot2top_A_DOUT1]
+
+# Pad each multiplexer to a power of two inputs
+top2bot_B_WEN0,GND0
+top2bot_B_MEN0,GND0
+top2bot_B_REN0,GND0
